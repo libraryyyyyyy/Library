@@ -177,7 +177,7 @@ public class menuService {
 
         String choice = scanner.nextLine();
         switch (choice) {
-            case "1" -> System.out.println("📨 [Librarian] See Inactive Accounts selected (not implemented yet).");
+            case "1" -> System.out.println("📨 [Librarian] See Overdue users (not implemented yet).");
             case "2" -> {
                 System.out.println("🚪 Logging out...");
                 return false;
