@@ -171,7 +171,7 @@ public class menuService {
 
     private boolean showLibrarianMenu() {
         System.out.println("\n--- Librarian Menu ---");
-        System.out.println("1. See Inactive Accounts");
+        System.out.println("1. See Overdue users");
         System.out.println("2. Logout");
         System.out.print("Choose option: ");
 
