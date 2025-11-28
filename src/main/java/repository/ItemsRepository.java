@@ -11,9 +11,8 @@ import java.util.Optional;
 
 public class ItemsRepository {
 
-    // ---------------------- SAVE ITEM ---------------------- //
     public boolean addItem(Items item) {
-        String sql = "INSERT INTO items (author, name, type, quantity, isbn) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO items (author, name, type, quantity) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -22,7 +21,6 @@ public class ItemsRepository {
             stmt.setString(2, item.getName());
             stmt.setString(3, item.getType().name());
             stmt.setInt(4, item.getQuantity());
-            stmt.setString(5, item.getISBN());
 
             stmt.executeUpdate();
             return true;
@@ -32,10 +30,8 @@ public class ItemsRepository {
         }
     }
 
-
-    // ---------------------- SEARCH BY NAME ---------------------- //
     public List<Items> findByName(String name) {
-        String sql = "SELECT * FROM items WHERE name LIKE ? AND deletedOn IS NULL";
+        String sql = "SELECT * FROM items WHERE name LIKE ?";
         List<Items> list = new ArrayList<>();
 
         try (Connection conn = DatabaseConnection.getConnection();
@@ -54,10 +50,8 @@ public class ItemsRepository {
         return list;
     }
 
-
-    // ---------------------- SEARCH BY AUTHOR ---------------------- //
     public List<Items> findByAuthor(String author) {
-        String sql = "SELECT * FROM items WHERE author LIKE ? AND deletedOn IS NULL";
+        String sql = "SELECT * FROM items WHERE author LIKE ?";
         List<Items> list = new ArrayList<>();
 
         try (Connection conn = DatabaseConnection.getConnection();
@@ -76,15 +70,13 @@ public class ItemsRepository {
         return list;
     }
 
-
-    // ---------------------- SEARCH BY ISBN ---------------------- //
-    public Optional<Items> findByISBN(String isbn) {
-        String sql = "SELECT * FROM items WHERE isbn = ? AND deletedOn IS NULL";
+    public Optional<Items> findByISBN(int isbn) {
+        String sql = "SELECT * FROM items WHERE isbn = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, isbn);
+            stmt.setInt(1, isbn);
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
@@ -97,61 +89,29 @@ public class ItemsRepository {
         return Optional.empty();
     }
 
-
-    // ---------------------- UPDATE ITEM ---------------------- //
-    public boolean updateItem(String isbn, Items updated) {
-        String sql = """
-            UPDATE items
-            SET author = ?, name = ?, type = ?, quantity = ?
-            WHERE isbn = ? AND deletedOn IS NULL
-        """;
+    public boolean increaseQuantity(int isbn) {
+        String sql = "UPDATE items SET quantity = quantity + 1 WHERE isbn = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, updated.getAuthor());
-            stmt.setString(2, updated.getName());
-            stmt.setString(3, updated.getType().name());
-            stmt.setInt(4, updated.getQuantity());
-            stmt.setString(5, isbn);
-
-            int changed = stmt.executeUpdate();
-            return changed > 0;
+            stmt.setInt(1, isbn);
+            int updated = stmt.executeUpdate();
+            return updated > 0;
 
         } catch (Exception e) {
-            System.out.println("Error updating item: " + e.getMessage());
+            System.out.println("Error increasing quantity: " + e.getMessage());
+            return false;
         }
-        return false;
     }
 
-
-    // ---------------------- SOFT DELETE ITEM ---------------------- //
-    public boolean deleteItem(String isbn) {
-        String sql = "UPDATE items SET deletedOn = CURDATE() WHERE isbn = ? AND deletedOn IS NULL";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, isbn);
-
-            int deleted = stmt.executeUpdate();
-            return deleted > 0;
-
-        } catch (Exception e) {
-            System.out.println("Error deleting item: " + e.getMessage());
-        }
-        return false;
-    }
-
-
-    // ---------------------- MAP RESULTSET TO ITEM ---------------------- //
     private Items mapItem(ResultSet rs) throws SQLException {
         return new Items(
                 rs.getString("author"),
                 rs.getString("name"),
                 libraryType.valueOf(rs.getString("type")),
                 rs.getInt("quantity"),
-                rs.getString("isbn")
+                String.valueOf(rs.getInt("isbn"))
         );
     }
 }

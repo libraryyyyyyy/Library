@@ -1,10 +1,9 @@
-import domain.Role;
-import domain.user;
 import repository.userRepository;
+import repository.ItemsRepository;
 import service.menuService;
 import service.userService;
+import service.ItemsService;
 
-import java.util.List;
 import java.util.Scanner;
 
 public class app {
@@ -14,8 +13,9 @@ public class app {
         Scanner scanner = new Scanner(System.in);
         userRepository userRepository = new userRepository();
         userService userService = new userService(userRepository);
-        menuService menuService = new menuService(scanner, userService);
-
+        ItemsRepository itemsRepository = new ItemsRepository();
+        ItemsService itemsService = new ItemsService(itemsRepository);
+        menuService menuService = new menuService(scanner, userService, itemsService);
         menuService.showMainMenu();
         scanner.close();
     }
