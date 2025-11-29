@@ -1,9 +1,7 @@
+import repository.BorrowRepository;
 import repository.userRepository;
 import repository.ItemsRepository;
-import service.menuService;
-import service.userService;
-import service.ItemsService;
-import service.EmailService;
+import service.*;
 import config.config;
 
 import java.util.Scanner;
@@ -23,7 +21,9 @@ public class app {
         userService userService = new userService(userRepository, emailService);
         ItemsRepository itemsRepository = new ItemsRepository();
         ItemsService itemsService = new ItemsService(itemsRepository);
-        menuService menuService = new menuService(scanner, userService, itemsService);
+        BorrowRepository borrowRepository = new BorrowRepository();
+        BorrowService borrowService = new BorrowService(borrowRepository , itemsRepository);
+        menuService menuService = new menuService(scanner, userService, itemsService , borrowService );
         menuService.showMainMenu();
 
         scanner.close();

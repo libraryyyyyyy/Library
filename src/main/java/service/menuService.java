@@ -13,11 +13,14 @@ public class menuService {
     private final Scanner scanner;
     private final userService userService;
     private final ItemsService itemsService;
+    private final BorrowService borrowService;
+  //  private user user;
 
-    public menuService(Scanner scanner, userService userService, ItemsService itemsService) {
+    public menuService(Scanner scanner, userService userService, ItemsService itemsService , BorrowService borrowService) {
         this.scanner = scanner;
         this.userService = userService;
         this.itemsService = itemsService;
+        this.borrowService = borrowService ;
     }
 
     public void showMainMenu() {
@@ -84,7 +87,7 @@ public class menuService {
             switch (user.getRole()) {
                 case ADMIN -> loggedIn = showAdminMenu();
                 case LIBRARIAN -> loggedIn = showLibrarianMenu();
-                case STUDENT -> loggedIn = showStudentMenu();
+                case STUDENT -> loggedIn = showStudentMenu(user);
                 default -> {
                     System.out.println("❌ Unknown role.");
                     loggedIn = false;
@@ -188,11 +191,12 @@ public class menuService {
         return true;
     }
 
-    private boolean showStudentMenu() {
+    private boolean showStudentMenu(user user) {
         System.out.println("\n--- Student Menu ---");
         System.out.println("1. Search Book");
         System.out.println("2. Search CD");
-        System.out.println("3. Logout");
+        System.out.println("3. Borrow Item");
+        System.out.println("4. Logout");
         System.out.print("Choose option: ");
 
         String choice = scanner.nextLine();
@@ -200,6 +204,24 @@ public class menuService {
             case "1" -> handleSearchBook();
             case "2" -> handleSearchCD();
             case "3" -> {
+
+                System.out.print("Enter ISBN to borrow: ");
+                String isbnInput = scanner.nextLine().trim();
+
+                try {
+                    int isbn = Integer.parseInt(isbnInput);
+                    boolean ok = borrowService.borrowItem(user.getEmail(), isbn);
+
+                    if (ok) System.out.println("📘 Borrow successful!");
+                    else System.out.println("❌ Could not borrow item.");
+
+                } catch (NumberFormatException e) {
+                    System.out.println("❌ ISBN must be a number.");
+                } catch (Exception e) {
+                    System.out.println("❌ " + e.getMessage());
+                }
+            }
+            case "4" -> {
                 System.out.println("🚪 Logging out...");
                 return false;
             }
@@ -370,6 +392,12 @@ public class menuService {
             System.out.println("❌ " + e.getMessage());
         }
     }
+
+    private void handleBorrowItem(user student) {
+
+
+    }
+
 
     private void printItems(List<Items> items, libraryType expectedType) {
         if (items.isEmpty()) {
