@@ -1,8 +1,8 @@
 package service;
 
-import domain.Borrow;
-import domain.Items;
-import domain.libraryType;
+import domain.*;
+import domain.strategyPattern.FineStrategy;
+import domain.strategyPattern.FineStrategyFactory;
 import repository.BorrowRepository;
 import repository.ItemsRepository;
 
@@ -19,7 +19,7 @@ public class BorrowService {
         this.itemsRepo = itemsRepo;
     }
 
-    public  boolean borrowItem(String studentEmail, int isbn) {
+    public boolean borrowItem(String studentEmail, int isbn) {
 
         Items item = itemsRepo.findByISBN(isbn)
                 .orElseThrow(() -> new IllegalArgumentException("Item not found"));
@@ -32,7 +32,11 @@ public class BorrowService {
         return borrowRepo.borrowItem(borrow);
     }
 
+
     public List<Borrow> getOverdueStudents() {
         return borrowRepo.getOverdueUsers();
     }
+
+
+
 }

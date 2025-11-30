@@ -196,7 +196,9 @@ public class menuService {
         System.out.println("1. Search Book");
         System.out.println("2. Search CD");
         System.out.println("3. Borrow Item");
-        System.out.println("4. Logout");
+        System.out.println("4. Return Item");
+        System.out.println("5. Pay Fine (Partial or Total)");
+        System.out.println("6. Logout");
         System.out.print("Choose option: ");
 
         String choice = scanner.nextLine();
@@ -221,7 +223,12 @@ public class menuService {
                     System.out.println("❌ " + e.getMessage());
                 }
             }
-            case "4" -> {
+            case "4" -> {}
+            case "5" ->{
+
+
+            }
+            case "6" -> {
                 System.out.println("🚪 Logging out...");
                 return false;
             }
@@ -261,17 +268,13 @@ public class menuService {
                 System.out.print("Enter ISBN of existing item: ");
                 String isbn = scanner.nextLine().trim();
 
-                // ⬇⬇⬇ التعديل المهم هون ⬇⬇⬇
-                // أولاً نجيب الـ item من السيرفس
-                Items item = itemsService.searchByISBN(isbn); // لو مش موجود، بترمي IllegalArgumentException
+                Items item = itemsService.searchByISBN(isbn);
 
-                // نتأكد إن نوعه نفس اللي اختارته (BOOK أو CD)
                 if (item.getType() != type) {
                     System.out.println("❌ This ISBN belongs to a " + item.getType() + " not a " + type + ".");
                     return;
                 }
 
-                // إذا النوع صح → نزيد الكمية
                 boolean ok = itemsService.increaseQuantityByISBN(isbn);
                 if (ok)
                     System.out.println("✅ Quantity increased by 1.");
@@ -393,10 +396,7 @@ public class menuService {
         }
     }
 
-    private void handleBorrowItem(user student) {
 
-
-    }
 
 
     private void printItems(List<Items> items, libraryType expectedType) {
