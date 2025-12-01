@@ -84,4 +84,159 @@ public class BorrowRepository {
         }
         return list;
     }
+
+    public boolean returnItem(Borrow returned) {
+
+        String updateReturnedSql = """
+        UPDATE student_borrow
+        SET returned = True
+        WHERE item_isbn = ? AND student_email = ?
+    """;
+
+        String updateQuantitySql = """
+        UPDATE items
+        SET quantity = quantity + 1
+        WHERE isbn = ? AND quantity > 0
+    """;
+
+        try (Connection conn = DatabaseConnection.getConnection()) {
+
+            // Start transaction
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement stmt = conn.prepareStatement(updateReturnedSql)) {
+                stmt.setInt(1, returned.getIsbn());
+                stmt.setString(2, returned.getStudentEmail());
+                stmt.executeUpdate();
+            }
+
+            try (PreparedStatement stmt2 = conn.prepareStatement(updateQuantitySql)) {
+                stmt2.setInt(1, returned.getIsbn());
+                int rowsUpdated = stmt2.executeUpdate();
+
+            }
+
+            // Commit both operations
+            conn.commit();
+            return true;
+
+        } catch (Exception e) {
+            System.out.println("Error returning item: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public void updateFineAfterPayment(String email, int paidAmount) {
+        String selectSql = "SELECT id, fine FROM student_borrow WHERE student_email = ? AND fine > 0 ORDER BY id ASC";
+        String updateSql = "UPDATE student_borrow SET fine = ? WHERE id = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement select = conn.prepareStatement(selectSql)) {
+                select.setString(1, email);
+                ResultSet rs = select.executeQuery();
+
+                try (PreparedStatement update = conn.prepareStatement(updateSql)) {
+                    int remaining = paidAmount;
+
+                    while (rs.next() && remaining > 0) {
+                        int id = rs.getInt("id");
+                        int rowFine = rs.getInt("fine");
+
+                        if (remaining >= rowFine) {
+                            // pay full rowFine
+                            update.setInt(1, 0);
+                            update.setInt(2, id);
+                            update.executeUpdate();
+                            remaining -= rowFine;
+                        } else {
+                            // partial payment for this row
+                            update.setInt(1, rowFine - remaining);
+                            update.setInt(2, id);
+                            update.executeUpdate();
+                            remaining = 0;
+                        }
+                    }
+                }
+            }
+
+            conn.commit();
+        } catch (Exception e) {
+            System.out.println("Error paying fine: " + e.getMessage());
+        }
+    }
+
+    public int getTotalFine(String email) {
+        String sql = "SELECT SUM(fine) AS total FROM student_borrow WHERE student_email = ? AND fine > 0";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) return rs.getInt("total");
+        } catch (Exception e) {
+            System.out.println("Error checking fine: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    public boolean markReturnedByStudentAndIsbn(String email, int isbn, int fineToSet) {
+        String findSql = "SELECT id FROM student_borrow WHERE student_email = ? AND item_isbn = ? AND returned = false ORDER BY borrow_date DESC LIMIT 1";
+        String updateSql = "UPDATE student_borrow SET returned = true, fine = ? WHERE id = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement find = conn.prepareStatement(findSql)) {
+
+            find.setString(1, email);
+            find.setInt(2, isbn);
+            ResultSet rs = find.executeQuery();
+
+            if (!rs.next()) {
+                return false; // no active borrow found
+            }
+
+            int id = rs.getInt("id");
+
+            try (PreparedStatement update = conn.prepareStatement(updateSql)) {
+                update.setInt(1, fineToSet);
+                update.setInt(2, id);
+                update.executeUpdate();
+                return true;
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error returning item: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // Get the most recent active borrow row for a student/isbn (to compute overdueDays etc.)
+    public Borrow findActiveBorrow(String email, int isbn) {
+        String sql = "SELECT id, student_email, item_isbn, borrow_date, overdue_date, returned, fine " +
+                "FROM student_borrow WHERE student_email = ? AND item_isbn = ? AND returned = false ORDER BY borrow_date DESC LIMIT 1";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, email);
+            stmt.setInt(2, isbn);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return new Borrow(
+                        rs.getInt("id"),
+                        rs.getString("student_email"),
+                        rs.getInt("item_isbn"),
+                        rs.getDate("borrow_date").toLocalDate(),
+                        rs.getDate("overdue_date").toLocalDate(),
+                        rs.getBoolean("returned"),
+                        rs.getInt("fine")
+                );
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error finding active borrow: " + e.getMessage());
+        }
+        return null;
+    }
 }

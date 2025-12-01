@@ -211,21 +211,70 @@ public class menuService {
                 String isbnInput = scanner.nextLine().trim();
 
                 try {
-                    int isbn = Integer.parseInt(isbnInput);
+                    if (borrowService.hasUnpaidFine(user.getEmail())) {
+                        System.out.println("❌ You have unpaid fines. Pay before borrowing.");
+                        break;
+                    }
+
+                    System.out.print("Enter ISBN to borrow: ");
+                    int isbn = Integer.parseInt(scanner.nextLine().trim());
                     boolean ok = borrowService.borrowItem(user.getEmail(), isbn);
 
                     if (ok) System.out.println("📘 Borrow successful!");
                     else System.out.println("❌ Could not borrow item.");
-
                 } catch (NumberFormatException e) {
                     System.out.println("❌ ISBN must be a number.");
                 } catch (Exception e) {
                     System.out.println("❌ " + e.getMessage());
                 }
             }
-            case "4" -> {}
-            case "5" ->{
+            case "4" -> {
+                try {
+                    if (borrowService.hasUnpaidFine(user.getEmail())) {
+                        System.out.println("❌ You have unpaid fines. Pay before returning items.");
+                        break;
+                    }
 
+                    System.out.print("Enter ISBN to return: ");
+                    int isbn = Integer.parseInt(scanner.nextLine().trim());
+
+                    boolean ok = borrowService.returnItem(user.getEmail(), isbn);
+                    if (ok) System.out.println("✅ Item returned successfully.");
+                    else System.out.println("❌ Could not return item (maybe not borrowed).");
+                } catch (NumberFormatException e) {
+                    System.out.println("❌ ISBN must be a number.");
+                } catch (Exception e) {
+                    System.out.println("❌ " + e.getMessage());
+                }
+            }
+            case "5" ->{
+                try {
+                    int totalFine = borrowService.getTotalFine(user.getEmail());
+                    if (totalFine == 0) {
+                        System.out.println("🎉 You have no fines.");
+                        break;
+                    }
+                    System.out.println("Your total fine: " + totalFine + " NIS");
+                    System.out.print("Enter amount to pay: ");
+                    int pay = Integer.parseInt(scanner.nextLine().trim());
+
+                    if (pay <= 0) {
+                        System.out.println("❌ Invalid amount.");
+                        break;
+                    }
+
+                    borrowService.payFine(user.getEmail(), pay);
+
+                    int remaining = borrowService.getTotalFine(user.getEmail());
+                    System.out.println("💰 Payment successful. Remaining fine: " + remaining + " NIS");
+
+                    if (remaining > 0)
+                        System.out.println("⚠️ You still cannot borrow/return until full fine is paid.");
+                } catch (NumberFormatException e) {
+                    System.out.println("❌ Amount must be a number.");
+                } catch (Exception e) {
+                    System.out.println("❌ " + e.getMessage());
+                }
 
             }
             case "6" -> {
