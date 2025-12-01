@@ -12,12 +12,12 @@ public class Borrow {
     private boolean returned;
     private int fine;
 
-    // constructor for new borrow (no id)
+
     public Borrow(String studentEmail, int isbn, LocalDate borrowDate, LocalDate overdueDate, boolean returned) {
         this(null, studentEmail, isbn, borrowDate, overdueDate, returned, 0);
     }
 
-    // constructor with id & fine (when read from DB)
+
     public Borrow(Integer id, String studentEmail, int isbn, LocalDate borrowDate, LocalDate overdueDate, boolean returned, int fine) {
         this.id = id;
         this.studentEmail = studentEmail;

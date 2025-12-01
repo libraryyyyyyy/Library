@@ -15,10 +15,7 @@ public class ItemsService {
         this.itemsRepository = itemsRepository;
     }
 
-    public boolean addNewItem(String name,
-                              String author,
-                              int quantity,
-                              libraryType type) {
+    public boolean addNewItem(String name, String author, int quantity, libraryType type) {
 
         if (name == null || name.isBlank())
             throw new IllegalArgumentException("Item name cannot be empty.");

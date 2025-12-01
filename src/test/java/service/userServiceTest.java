@@ -46,7 +46,7 @@ class userServiceTest {
     }
 
     @Test
-    void registerUser_emailAlreadyUsed_throwsException() {
+    void registerUserWithEmailAlreadyUsedException() {
         String email = "sara@gmail.com";
         String password = "sarasara";
 
@@ -54,28 +54,27 @@ class userServiceTest {
         when(userRepository.findByEmail(email))
                 .thenReturn(Optional.of(existing));
 
-        IllegalArgumentException ex = assertThrows(
+        Exception ex = assertThrows(
                 IllegalArgumentException.class,
                 () -> userService.registerUser(email, password, password)
         );
 
         assertEquals("This email is already used.", ex.getMessage());
 
-        // ما لازم يحاول يحفظ أو يبعت إيميل
         verify(userRepository, never()).save(any(user.class));
         verify(emailService, never())
                 .sendEmail(anyString(), anyString(), anyString());
     }
 
     @Test
-    void registerUser_shortPassword_throwsException() {
+    void registerUserWithShortPasswordException() {
         String email = "sara@gmail.com";
         String password = "sara";
 
         when(userRepository.findByEmail(email))
                 .thenReturn(Optional.empty());
 
-        IllegalArgumentException ex = assertThrows(
+        Exception ex = assertThrows(
                 IllegalArgumentException.class,
                 () -> userService.registerUser(email, password, password)
         );
@@ -88,13 +87,13 @@ class userServiceTest {
     }
 
     @Test
-    void registerUser_passwordMismatch_throwsException() {
+    void registerUserPasswordMismatchException() {
         String email = "sara@gmail.com";
 
         when(userRepository.findByEmail(email))
                 .thenReturn(Optional.empty());
 
-        IllegalArgumentException ex = assertThrows(
+        Exception ex = assertThrows(
                 IllegalArgumentException.class,
                 () -> userService.registerUser(email, "password123", "notMatching")
         );
@@ -107,7 +106,7 @@ class userServiceTest {
     }
 
     @Test
-    void registerUser_saveFails_doesNotSendEmail() {
+    void registerUserSaveFailsDoesNotSendEmail() {
         String email = "sara@gmail.com";
         String password = "sarasara";
 
@@ -136,7 +135,7 @@ class userServiceTest {
     }
 
     @Test
-    void authenticate_wrongPassword_throwsException() {
+    void authenticateWrongPasswordException() {
         String email = "sara@gmail.com";
         String correctPassword = "sarasara";
         String wrongPassword = "notCorrect123";
@@ -147,7 +146,7 @@ class userServiceTest {
         when(userRepository.findByEmail(email))
                 .thenReturn(Optional.of(u));
 
-        IllegalArgumentException ex = assertThrows(
+        Exception ex = assertThrows(
                 IllegalArgumentException.class,
                 () -> userService.authenticate(email, wrongPassword)
         );
@@ -156,13 +155,13 @@ class userServiceTest {
     }
 
     @Test
-    void authenticate_emailNotFound_throwsException() {
+    void authenticateEmailNotFoundThrowsException() {
         String email = "sara@gmail.com";
 
         when(userRepository.findByEmail(email))
                 .thenReturn(Optional.empty());
 
-        IllegalArgumentException ex = assertThrows(
+        Exception ex = assertThrows(
                 IllegalArgumentException.class,
                 () -> userService.authenticate(email, "anyPassword123")
         );
