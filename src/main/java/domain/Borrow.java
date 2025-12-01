@@ -35,4 +35,9 @@ public class Borrow {
     public LocalDate getOverdueDate() { return overdueDate; }
     public boolean isReturned() { return returned; }
     public int getFine() { return fine; }
+
+    @Override
+    public String toString() {
+        return studentEmail + " " +isbn + "   "+borrowDate+"   "+overdueDate+"    "+fine;
+    }
 }

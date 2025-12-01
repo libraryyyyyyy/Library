@@ -23,7 +23,7 @@ public class app {
         ItemsService itemsService = new ItemsService(itemsRepository);
         BorrowRepository borrowRepository = new BorrowRepository();
         BorrowService borrowService = new BorrowService(borrowRepository , itemsRepository);
-        menuService menuService = new menuService(scanner, userService, itemsService , borrowService );
+        menuService menuService = new menuService(scanner, userService, itemsService , borrowService , emailService);
         menuService.showMainMenu();
 
         scanner.close();

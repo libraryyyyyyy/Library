@@ -94,4 +94,9 @@ public class BorrowService {
     public List<Borrow> getOverdueStudents() {
         return borrowRepo.getOverdueUsers();
     }
+
+    public List<String> getStudentsWithUnpaidFines() {
+        return borrowRepo.getStudentsWithUnpaidFines();
+    }
+
 }

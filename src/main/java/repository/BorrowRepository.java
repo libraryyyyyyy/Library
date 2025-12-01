@@ -241,4 +241,24 @@ public class BorrowRepository {
         }
         return null;
     }
+
+    public List<String> getStudentsWithUnpaidFines() {
+        String sql = "SELECT DISTINCT student_email FROM student_borrow WHERE fine > 0";
+        List<String> emails = new ArrayList<>();
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                emails.add(rs.getString("student_email"));
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error fetching students with unpaid fines: " + e.getMessage());
+        }
+
+        return emails;
+    }
+
 }

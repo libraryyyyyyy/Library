@@ -11,13 +11,14 @@ public class menuService {
     private final userService userService;
     private final ItemsService itemsService;
     private final BorrowService borrowService;
-  //  private user user;
+    private final EmailService emailService;
 
-    public menuService(Scanner scanner, userService userService, ItemsService itemsService , BorrowService borrowService) {
+    public menuService(Scanner scanner, userService userService, ItemsService itemsService , BorrowService borrowService, EmailService emailService) {
         this.scanner = scanner;
         this.userService = userService;
         this.itemsService = itemsService;
         this.borrowService = borrowService ;
+        this.emailService = emailService ;
     }
 
     public void showMainMenu() {
@@ -99,7 +100,8 @@ public class menuService {
         System.out.println("2. Delete Inactive Account");
         System.out.println("3. Change User's Role");
         System.out.println("4. Add Book / CD");
-        System.out.println("5. Logout");
+        System.out.println("5. Send Fine Reminder Emails");
+        System.out.println("6. Logout");
         System.out.print("Choose option: ");
 
         String choice = scanner.nextLine();
@@ -108,7 +110,8 @@ public class menuService {
             case "2" -> deleteInactiveAccount();
             case "3" -> changeUserRole();
             case "4" -> handleAddItem();
-            case "5" -> {
+            case "5" -> sendFineReminders();
+            case "6" -> {
                 System.out.println("🚪 Logging out...");
                 return false;
             }
@@ -170,6 +173,32 @@ public class menuService {
             System.out.println("❌ User not found.");
     }
 
+    private void sendFineReminders() {
+        System.out.println("📧 Sending fine reminder emails...");
+
+
+        List<String> unpaidEmails = borrowService.getStudentsWithUnpaidFines();
+
+        if (unpaidEmails.isEmpty()) {
+            System.out.println("✔ No users with unpaid fines.");
+            return;
+        }
+
+        for (String email : unpaidEmails) {
+            String subject = "Library Fine Reminder";
+            String body =
+                    "Dear Student,\n\n" +
+                            "You have unpaid library fines in your account. " +
+                            "Please settle them as soon as possible to avoid borrowing restrictions.\n\n" +
+                            "Best regards,\nLibrary Admin";
+
+            emailService.sendEmail(email, subject, body);
+        }
+
+        System.out.println("✔ Fine reminder emails sent to " + unpaidEmails.size() + " students.");
+    }
+
+
     private boolean showLibrarianMenu() {
         System.out.println("\n--- Librarian Menu ---");
         System.out.println("1. See Overdue users");
@@ -185,6 +214,7 @@ public class menuService {
                 if (overdueList.isEmpty()) {
                     System.out.println("No overdue users found.");
                 } else {
+                    System.out.println("student_email      ISBN  borrow_date  overdue_date fine");
                     overdueList.forEach(System.out::println);
                 }
             }
