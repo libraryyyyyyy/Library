@@ -61,12 +61,14 @@ public class BorrowRepository {
     }
 
     public List<Borrow> getOverdueUsers() {
-        String sql = "SELECT * FROM student_borrow WHERE overdue_date < CURDATE() AND returned = false";
+        String sql = "SELECT * FROM student_borrow WHERE overdue_date < CURRENT_DATE AND returned = false";
         List<Borrow> list = new ArrayList<>();
 
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            /*System.out.println("URL  = " + conn.getMetaData().getURL());
+            System.out.println("USER = " + conn.getMetaData().getUserName());*/
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
