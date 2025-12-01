@@ -1,9 +1,6 @@
 package service;
 
-import domain.Role;
-import domain.user;
-import domain.libraryType;
-import domain.Items;
+import domain.*;
 
 import java.io.Console;
 import java.util.List;
@@ -181,7 +178,16 @@ public class menuService {
 
         String choice = scanner.nextLine();
         switch (choice) {
-            case "1" -> System.out.println("📨 [Librarian] See Overdue users (not implemented yet).");
+            case "1" -> {
+                System.out.println("📨 [Librarian] Overdue Users:");
+                List<Borrow> overdueList = borrowService.getOverdueStudents();
+
+                if (overdueList.isEmpty()) {
+                    System.out.println("No overdue users found.");
+                } else {
+                    overdueList.forEach(System.out::println);
+                }
+            }
             case "2" -> {
                 System.out.println("🚪 Logging out...");
                 return false;
@@ -207,8 +213,6 @@ public class menuService {
             case "2" -> handleSearchCD();
             case "3" -> {
 
-                System.out.print("Enter ISBN to borrow: ");
-                String isbnInput = scanner.nextLine().trim();
 
                 try {
                     if (borrowService.hasUnpaidFine(user.getEmail())) {
