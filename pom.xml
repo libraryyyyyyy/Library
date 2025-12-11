@@ -89,6 +89,15 @@
                 <artifactId>sonar-maven-plugin</artifactId>
                 <version>3.11.0.3922</version> <!-- Use the latest version from Maven Central -->
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version> <!-- newer version supports JDK 23 -->
+                <configuration>
+                    <source>23</source>
+                    <target>23</target>
+                </configuration>
+            </plugin>
 
             <!-- Maven Surefire (runs JUnit 5 tests) -->
             <plugin>
