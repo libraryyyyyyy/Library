@@ -12,6 +12,7 @@ target/
 *.iml
 *.ipr
 .env
+.drawio
 db.properties
 ### Eclipse ###
 .apt_generated
